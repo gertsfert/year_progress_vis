@@ -1,11 +1,7 @@
 # This notebook is formatted in Visual Studio Code Format (cells delimited by # %%)
 # %% [markdown]
 # # Text Parsing - A Test
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-
 import re
-
 import pandas as pd
 
 
