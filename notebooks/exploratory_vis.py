@@ -5,10 +5,10 @@ from plotly.subplots import make_subplots
 
 df = pd.read_feather(r'data/interim/year_progress.feather')
 
-# %% Visulising for the hell of it
-
+# %% [markdown]
+# # Timelines
 replies_fig = go.Scatter(
-    x=df.index,
+    x=df['date'],
     y=df['replies'],
     hovertext=df['year_perc'],
     hoverinfo='text',
@@ -16,7 +16,7 @@ replies_fig = go.Scatter(
     name='Replies')
 
 likes_fig = go.Scatter(
-    x=df.index,
+    x=df['date'],
     y=df['likes'],
     hovertext=df['year_perc'],
     hoverinfo='text',
@@ -24,7 +24,7 @@ likes_fig = go.Scatter(
     name='Likes')
 
 retweets_fig = go.Scatter(
-    x=df.index,
+    x=df['date'],
     y=df['retweets'],
     hovertext=df['year_perc'],
     hoverinfo='text',
@@ -49,5 +49,23 @@ fig.update_layout(
 
 fig.show()
 
+
+# %% [markdown]
+# # Top 10:
+top_replies = df.sort_values('replies', ascending=False)[
+    ['date', 'year_perc', 'replies']].head(10)
+top_likes = df.sort_values('likes', ascending=False)[
+    ['date', 'year_perc', 'likes']].head(10)
+top_retweets = df.sort_values('retweets', ascending=False)[
+    ['date', 'year_perc', 'retweets']].head(10)
+
+# %%
+top_replies
+
+# %%
+top_likes
+
+# %%
+top_retweets
 
 # %%
