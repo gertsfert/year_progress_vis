@@ -38,7 +38,7 @@ df.loc[no_year_rows, 'date'] = df.loc[no_year_rows, 'date'] + ' 2019'
 # so the above logic has now called it 31 Dec 2019 erroneously
 # fixing that
 rows = df['date'] == 'Dec 31 2019'
-df.loc['rows', 'date'] = 'Dec 31 2018'
+df.loc[rows, 'date'] = 'Dec 31 2018'
 
 # changing to date index
 df['date'] = pd.to_datetime(df['date'])
