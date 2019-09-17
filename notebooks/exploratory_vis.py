@@ -104,15 +104,16 @@ corr = corr.drop([
     'retweets',
     'replies'])
 
-data = [go.Heatmap(
+data = go.Heatmap(
     z=corr.values.tolist(),
     x=corr.columns.tolist(),
     y=corr.index.tolist(),
     type='heatmap',
-    colorscale='Viridis')]
+    colorscale='Viridis',
+    zmin=0,
+    zmax=1,
+    showscale=False)
 
-heatmap = go.Figure(data=data)
-heatmap.show()
 # %% [markdown]
 # # Normalizing Measures
 # Correlation is not as strong as it could be, as the twitter account "activity"
@@ -164,14 +165,31 @@ norm_corr = norm_corr.drop([
 
 norm_corr = norm_corr.drop(reaction_fields, axis=0)
 
-norm_data = [go.Heatmap(
+norm_data = go.Heatmap(
     z=norm_corr.values.tolist(),
     x=norm_corr.columns.tolist(),
     y=norm_corr.index.tolist(),
     type='heatmap',
-    colorscale='Viridis')]
+    colorscale='Viridis',
+    zmin=0,
+    zmax=1,
+    showscale=True)
 
-norm_heatmap = go.Figure(data=norm_data)
-norm_heatmap.show()
+
+# %% plotting
+corr_fig = make_subplots(
+    rows=2, cols=1,
+    vertical_spacing=0.1)
+
+corr_fig.append_trace(data, 1, 1)
+corr_fig.append_trace(norm_data, 2, 1)
+
+corr_fig.update_layout(
+    height=900,
+    width=800,
+    title_text='Correlation Heatmaps')
+
+corr_fig.show()
+
 
 # %%
