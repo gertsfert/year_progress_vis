@@ -7,13 +7,20 @@ df = pd.read_feather(r'data/interim/year_progress.feather')
 
 # %% [markdown]
 # # Timelines
+REPLIES_COLOR = 'crimson'
+LIKES_COLOR = 'darkmagenta'
+RETWEETS_COLOR = 'dodgerblue'
+
+
 replies_fig = go.Scatter(
     x=df['date'],
     y=df['replies'],
     hovertext=df['year_perc'],
     hoverinfo='text',
     mode='lines',
-    name='Replies')
+    name='Replies',
+    yaxis="y1",
+    line=dict(color=REPLIES_COLOR))
 
 likes_fig = go.Scatter(
     x=df['date'],
@@ -21,7 +28,9 @@ likes_fig = go.Scatter(
     hovertext=df['year_perc'],
     hoverinfo='text',
     mode='lines',
-    name='Likes')
+    name='Likes',
+    yaxis='y2',
+    line=dict(color=LIKES_COLOR))
 
 retweets_fig = go.Scatter(
     x=df['date'],
@@ -29,16 +38,18 @@ retweets_fig = go.Scatter(
     hovertext=df['year_perc'],
     hoverinfo='text',
     mode='lines',
-    name='Retweets')
+    name='Retweets',
+    yaxis="y3",
+    line=dict(color=RETWEETS_COLOR))
 
 fig = make_subplots(
     rows=3, cols=1,
-    vertical_spacing=0.1)
+    vertical_spacing=0.1,
+    subplot_titles=("Replies", "Likes", "Retweets"))
 
 fig.append_trace(replies_fig, 1, 1)
 fig.append_trace(likes_fig, 2, 1)
 fig.append_trace(retweets_fig, 3, 1)
-
 
 fig.update_layout(
     height=900,
@@ -46,8 +57,66 @@ fig.update_layout(
     title_text='Year Progress Twitter Account'
 )
 
-
 fig.show()
+# %% [markdown]
+# # Multiple Axes Test
+multiple_axes_fig = go.Figure()
+
+replies_fig.update(
+    line=dict(
+        color=REPLIES_COLOR,
+        width=2,
+        dash='dot'))
+
+likes_fig.update(
+    line=dict(
+        color=LIKES_COLOR,
+        width=3,
+        dash='dash'))
+
+
+multiple_axes_fig.add_trace(replies_fig)
+multiple_axes_fig.add_trace(likes_fig)
+multiple_axes_fig.add_trace(retweets_fig)
+
+# Create Axis objects
+multiple_axes_fig.update_layout(
+    xaxis=dict(
+        domain=[0.1, 1]
+    ),
+
+    yaxis=dict(
+        title="Replies",
+        titlefont=dict(
+            color=REPLIES_COLOR),
+        tickfont=dict(
+            color=REPLIES_COLOR),
+        position=0),
+    yaxis2=dict(
+        title="Likes",
+        titlefont=dict(
+            color=LIKES_COLOR),
+        tickfont=dict(
+            color=LIKES_COLOR),
+        anchor="free",
+        overlaying="y",
+        side="left",
+        position=0.1),
+    yaxis3=dict(
+        title="Retweets",
+        titlefont=dict(
+            color=RETWEETS_COLOR),
+        tickfont=dict(
+            color=RETWEETS_COLOR),
+        anchor="free",
+        overlaying="y",
+        side="right",
+        position=1
+    )
+)
+
+# update layout properties
+multiple_axes_fig.show()
 
 # %% [markdown]
 # # Top 10:
@@ -84,37 +153,6 @@ df['is_99'] = df['year_perc'] == 99
 df.head()
 
 # %% [markdown]
-# # Correlation Heatmap
-corr = df.drop('year_perc', axis=1).corr()
-
-# do not want modulus measures as columns
-corr = corr.drop([
-    'is_mod_25',
-    'is_mod_10',
-    'is_100',
-    'is_99',
-    'is_69',
-    'is_50',
-    'is_0'
-], axis=1)
-
-# get rid of replies/retweets/likes for rows
-corr = corr.drop([
-    'likes',
-    'retweets',
-    'replies'])
-
-data = go.Heatmap(
-    z=corr.values.tolist(),
-    x=corr.columns.tolist(),
-    y=corr.index.tolist(),
-    type='heatmap',
-    colorscale='Viridis',
-    zmin=0,
-    zmax=1,
-    showscale=False)
-
-# %% [markdown]
 # # Normalizing Measures
 # Correlation is not as strong as it could be, as the twitter account "activity"
 # has increased over time (thus eariler years weakens the correlation between percentage
@@ -143,16 +181,38 @@ df['norm_likes'] = df.apply(normalize_reaction, axis=1, reaction='likes')
 
 df.head()
 
+# %% correlating reactions
+corr = df.drop([
+    'year_perc',
+    'norm_likes',
+    'norm_retweets',
+    'norm_replies'], axis=1).corr()
 
-# %% [markdown]
-# # Correlating Normalized Reactions
+
+# do not want modulus measures as columns
+corr = corr.drop([
+    'is_mod_25',
+    'is_mod_10',
+    'is_100',
+    'is_99',
+    'is_69',
+    'is_50',
+    'is_0'
+], axis=1)
+
+# get rid of replies/retweets/likes for rows
+corr = corr.drop([
+    'likes',
+    'retweets',
+    'replies'], axis=0)
+
+
+# %% correlating normalized reactions
 norm_corr = df.drop([
     'year_perc',
     'likes',
     'retweets',
     'replies'], axis=1).corr()
-
-reaction_fields = ['norm_likes', 'norm_retweets', 'norm_replies']
 
 norm_corr = norm_corr.drop([
     'is_mod_25',
@@ -163,26 +223,42 @@ norm_corr = norm_corr.drop([
     'is_50',
     'is_0'], axis=1)
 
-norm_corr = norm_corr.drop(reaction_fields, axis=0)
-
-norm_data = go.Heatmap(
-    z=norm_corr.values.tolist(),
-    x=norm_corr.columns.tolist(),
-    y=norm_corr.index.tolist(),
-    type='heatmap',
-    colorscale='Viridis',
-    zmin=0,
-    zmax=1,
-    showscale=True)
+norm_corr = norm_corr.drop([
+    'norm_likes',
+    'norm_retweets',
+    'norm_replies'], axis=0)
 
 
-# %% plotting
+# %% [markdown]
+# # Correlation Heatmaps
+max_corr = max(corr.max().max(), norm_corr.max().max())
+
 corr_fig = make_subplots(
     rows=2, cols=1,
-    vertical_spacing=0.1)
+    vertical_spacing=0.1,
+    subplot_titles=("Raw Reactions", "Normalized Reactions"))
 
-corr_fig.append_trace(data, 1, 1)
-corr_fig.append_trace(norm_data, 2, 1)
+corr_fig.append_trace(
+    go.Heatmap(
+        z=corr.values.tolist(),
+        x=corr.columns.tolist(),
+        y=corr.index.tolist(),
+        type='heatmap',
+        colorscale='Viridis',
+        zmin=0,
+        zmax=max_corr,
+        showscale=False), 1, 1)
+
+corr_fig.append_trace(
+    go.Heatmap(
+        z=norm_corr.values.tolist(),
+        x=norm_corr.columns.tolist(),
+        y=norm_corr.index.tolist(),
+        type='heatmap',
+        colorscale='Viridis',
+        zmin=0,
+        zmax=max_corr,
+        showscale=True), 2, 1)
 
 corr_fig.update_layout(
     height=900,
