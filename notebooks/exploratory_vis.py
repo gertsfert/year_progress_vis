@@ -75,9 +75,9 @@ likes_fig.update(
         dash='dash'))
 
 
+multiple_axes_fig.add_trace(retweets_fig)
 multiple_axes_fig.add_trace(replies_fig)
 multiple_axes_fig.add_trace(likes_fig)
-multiple_axes_fig.add_trace(retweets_fig)
 
 # Create Axis objects
 multiple_axes_fig.update_layout(
